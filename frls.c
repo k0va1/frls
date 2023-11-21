@@ -1,51 +1,44 @@
-#include <errno.h>
+#include <fcntl.h>
 #include <netinet/in.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <fcntl.h>
-#include <sys/types.h>
 #include <unistd.h>
-#include <stdbool.h>
-#include <regex.h>
 
-#define PORT 1488
+#include "cJSON.h"
+#include "config.h"
+#include "transport.h"
+#include "commands.h"
+#include "utils.h"
 
-void fail(char *msg) {
-  fprintf(stderr, "[ERROR] %s: %s", msg, strerror(errno));
-  exit(-1);
-}
+#define MESSAGE_BUFFER 64000
 
-void info(char *msg) {
-  printf("[INFO] %s\n", msg);
-}
+void process_client_message(Config *config, char *client_message) {
+  Request *req = create_request(client_message);
+  if (req != NULL) {
+    char *method = req->method;
 
-void process_client_message(char *client_message) {
-  char *headers;
-  char *body;
-  char *content_length_header;
+    if (strcmp(method, "initialize") == 0) {
+      initialize(config, req);
+    } else if (strcmp(method, "initialized") == 0) {
+      printf("Method `%s` hasn't implemented yet\n", method);
+    } else if (strcmp(method, "shutdown") == 0) {
+      printf("Method `%s` hasn't implemented yet\n", method);
+    } else if (strcmp(method, "exit") == 0) {
+      printf("Method `%s` hasn't implemented yet\n", method);
+    } else {
+      fprintf(stderr, "Unsupported method `%s`\n", method);
+    }
 
-  char *token;
-  int content_length;
-
-  char *content_type_header;
-  char *content_type;
-
-  char *content_separator = "\r\n";
-  token = strtok(client_message, content_separator);
-
-  while(token != NULL) {
-    printf("HEADER: %s\n", token);
-    token = strtok(NULL, content_separator);
+    destroy_request(req);
   }
-/*  body = client_message;*/
-
-  /*content_length_header = strtok(headers, "\n");*/
-  /*content_type_header = headers;*/
 }
 
 int main(int argc, char *argv[]) {
+  Config *config = create_config(argc, argv);
+
   int socket_fd;
   struct sockaddr_in server_address;
   struct sockaddr_in client_address;
@@ -63,43 +56,47 @@ int main(int argc, char *argv[]) {
   }
 
   server_address.sin_family = AF_INET;
-  server_address.sin_port = htons(PORT);
+  server_address.sin_port = htons(config->port);
   server_address.sin_addr.s_addr = INADDR_ANY;
   server_address.sin_zero[7] = '\0';
 
-  if (bind(socket_fd, (struct sockaddr *)&server_address, sizeof(struct sockaddr)) <
-      0) {
+  if (bind(socket_fd, (struct sockaddr *)&server_address,
+           sizeof(struct sockaddr)) < 0) {
     fail("Couldn't bind the socket");
   }
 
   if (listen(socket_fd, 4) < 0) {
-    fail("Couldn't listen connections");
+    fail("Couldn't listen to connections");
   }
-  printf("[INFO] Listening on port: %d\n", PORT);
+  info("Listening on %s:%d", config->host, config->port);
 
   uint length_of_address = sizeof(client_address);
-  int client_socket = accept(socket_fd, (struct sockaddr*)&client_address, &length_of_address);
 
-  if (client_socket < 0) {
-    fail("Couldn't establish connection with client");
-  }
+  while (true) {
+    int client_socket = accept(socket_fd, (struct sockaddr *)&client_address,
+                               &length_of_address);
 
-  while(true) {
-    char client_msg[1024];
+    if (client_socket < 0) {
+      fail("Couldn't establish connection with client");
+    }
+
+    char client_msg[MESSAGE_BUFFER];
     int bytes_read = read(client_socket, client_msg, sizeof(client_msg));
 
-    if(bytes_read < 0) {
-      printf("[ERROR] Couldn't read client message\n");
+    if (bytes_read < 0) {
+      error("Couldn't read client message");
+      break;
+    } else if (bytes_read == 0) {
+      // exit on empty message(Ctrl-C in telnet)
       break;
     } else {
       client_msg[bytes_read] = '\0';
-      printf("[INFO] Message from client: %s\n", client_msg);
-      process_client_message(client_msg);
+      info("Message from client:\n%s", client_msg);
+      process_client_message(config, client_msg);
     }
+    close(client_socket);
   }
-
   close(socket_fd);
-  close(client_socket);
 
   return 0;
 }
