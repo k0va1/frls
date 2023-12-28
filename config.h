@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <stdbool.h>
+#include "cJSON.h"
 
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
@@ -23,13 +24,17 @@ OPTIONS:\n\
 #define PORT 1488
 
 typedef struct {
+  uint port;
+  uint parent_process_id;
   char *host;
   char *project_root;
-  bool is_initialized;
-  uint port;
+  char *client_name;
+  char *client_version;
+  cJSON *client_capabilities;
 } Config;
 
 Config *create_config(int argc, char *argv[]);
 void destroy_config(Config *config);
+void print_config(Config *config);
 
 #endif

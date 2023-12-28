@@ -5,12 +5,12 @@
 
 #include "optparser.h"
 #include "config.h"
+#include "utils.h"
 
 Config *create_config(int argc, char *argv[]) {
   Config *config = malloc(sizeof(Config *));
   config->host = HOST;
   config->port = PORT;
-  config->is_initialized = false;
 
   if (argc == 1) {
     return config;
@@ -47,3 +47,16 @@ Config *create_config(int argc, char *argv[]) {
   return config;
 }
 
+void print_config(Config *config) {
+  log_info("Config contents:");
+  printf("Host: %s\n", config->host);
+  printf("Port: %d\n", config->port);
+  printf("Parent process id: %d\n", config->parent_process_id);
+  printf("Project root: %s\n", config->project_root);
+  printf("Client name: %s\n", config->client_name);
+  printf("Client version: %s\n", config->client_version);
+}
+
+void destroy_config(Config *config) {
+  printf("Destroy config\n");
+}
