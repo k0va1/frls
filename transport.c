@@ -1,8 +1,10 @@
 #include "transport.h"
 #include "utils.h"
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
 
 Headers *create_headers(char *headers_str) {
   Headers *headers = malloc(sizeof(*headers));
@@ -51,7 +53,7 @@ Request *create_request(char *request) {
 
   tail = strstr(request, content_separator);
   if (tail == NULL) {
-    fprintf(stderr, "Invalid message");
+    log_error("Invalid message");
     return NULL;
   }
   size_t headers_len = tail - request + 2;
@@ -64,23 +66,97 @@ Request *create_request(char *request) {
   strncpy(body_str, request + headers_len, body_len);
 
   Headers *headers = create_headers(headers_str);
-  printf("Content type: %s\n", headers->content_type);
-  printf("Charset: %s\n", headers->charset);
-  printf("Content length: %zu\n", *headers->content_length);
+  log_info("Content type: %s", headers->content_type);
+  log_info("Charset: %s", headers->charset);
+  log_info("Content length: %zu", *headers->content_length);
 
   if (strcasecmp(headers->charset, DEFAULT_CHARSET) != 0) {
-    fprintf(stderr, "Unsupported charset: %s. Tool supports utf-8 only\n",
-            headers->charset);
+    log_error("Unsupported charset: %s. Tool supports utf-8 only\n",
+              headers->charset);
+    destroy_headers(headers);
     return NULL;
   }
-  cJSON *params = cJSON_Parse(body_str);
-  char *method = cJSON_GetObjectItem(params, "method")->valuestring;
+  cJSON *body = cJSON_Parse(body_str);
+  if (body == NULL) {
+    const char *error_ptr = cJSON_GetErrorPtr();
+    if (error_ptr != NULL) {
+      log_error("Invalid JSON at: %s", error_ptr);
+      destroy_headers(headers);
+      cJSON_Delete(body);
+      return NULL;
+    }
+  }
 
   Request *req = malloc(sizeof(Request));
   req->headers = headers;
-  req->method = strdup(method);
-  req->params = params;
+
+  cJSON *method = cJSON_GetObjectItem(body, "method");
+  if (cJSON_IsString(method) && (method->valuestring != NULL)) {
+    req->method = strdup(method->valuestring);
+  }
+
+  cJSON *params = cJSON_GetObjectItem(body, "params");
+  if (cJSON_IsObject(params)) {
+    req->params = cJSON_Duplicate(params, true);
+  }
+
   return req;
+}
+
+void send_response(int socket, int status, char *body) {
+  size_t content_length = strlen(body);
+  char *template = "HTTP/1.1 %d %s\r\nContent-Length: %d\r\nContent-Type: "
+                   "application/vscode-jsonrpc; charset=utf-8\r\n\r\n\%s\n";
+  char *status_msg;
+  switch (status) {
+  case 200:
+    status_msg = "OK";
+    break;
+  case 204:
+    status_msg = "No Content";
+    break;
+  default:
+    log_error("Unsupported status %d", status);
+    return;
+  }
+
+  char response_message[MESSAGE_BUFFER] = {'\0'};
+  int msg_len = snprintf(response_message, MESSAGE_BUFFER, template, status,
+                         status_msg, content_length, body);
+  if (send(socket, response_message, msg_len, 0) < 0) {
+    log_error("Couldn't send response because of %s", strerror(errno));
+  }
+}
+
+void uninitialized_error(Server *server) {
+  cJSON *jsonrpc = NULL;
+  cJSON *req_id = NULL;
+  cJSON *code = NULL;
+  cJSON *message = NULL;
+
+  cJSON *body = cJSON_CreateObject();
+  cJSON *error = cJSON_CreateObject();
+
+  code = cJSON_CreateNumber(SERVER_NOT_INITIALIZED);
+  char *error_msg =
+      "Server hasn't been initialized yet. Send `initialize` request first: "
+      "https://microsoft.github.io/language-server-protocol/specifications/lsp/"
+      "3.17/specification/#initialize";
+  log_error(error_msg);
+  message = cJSON_CreateString(error_msg);
+  cJSON_AddItemToObject(error, "code", code);
+  cJSON_AddItemToObject(error, "message", message);
+
+  jsonrpc = cJSON_CreateString("2.0");
+  req_id = cJSON_CreateNumber(1);
+
+  cJSON_AddItemToObject(body, "jsonrpc", jsonrpc);
+  cJSON_AddItemToObject(body, "id", req_id);
+  cJSON_AddItemToObject(body, "error", error);
+
+  char *json_str = cJSON_PrintUnformatted(body);
+  send_response(server->client_socket, 200, json_str);
+  cJSON_Delete(body);
 }
 
 void destroy_headers(Headers *headers) {
