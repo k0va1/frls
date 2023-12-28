@@ -3,6 +3,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
+#include "utils.h"
 
 const char *unary_args[] = {"--version", "-v", "--help", "-h"};
 const char *supported_commands[] = {"--version", "-v", "--help", "-h"};
@@ -16,18 +17,6 @@ bool is_unary_arg(char *arg) {
   }
 
   return false;
-}
-
-char *remove_leading_dashes(char *arg) {
-  size_t dash_count = 0;
-  char *c = arg;
-
-  while (*c == '-') {
-    dash_count++;
-    c++;
-  }
-
-  return arg + dash_count;
 }
 
 ArgKV *parse_options(int argc, char *argv[], size_t *length) {
