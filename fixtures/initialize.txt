@@ -12,7 +12,7 @@ Content-Type: application/vscode-jsonrpc, charset=utf-8
       "version": "1.0.0"
     },
     "locale": "en",
-    "rootUri": "file:///Users/k0va1/dev/frls/fixtures/project/lib/project.rb",
+    "rootUri": "file:///Users/k0va1/dev/frls/fixtures/project",
     "initializationOptions": {
       "hello": "world"
     },

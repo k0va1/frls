@@ -149,9 +149,6 @@ void parse(char *file_path, ParsedInfo *parsed_info) {
   if (root != NULL) {
     pm_buffer_t buffer = {0};
 
-    pm_prettyprint(&buffer, &parser, root);
-    printf("%s\n", buffer.value);
-
     print_errors(&parser);
 
     ConstHM *consts = NULL;
@@ -160,9 +157,6 @@ void parse(char *file_path, ParsedInfo *parsed_info) {
     if (consts != NULL) {
       log_info("Const Map built, len: %zu", hmlen(consts));
 
-      for (int i = 0; i < shlen(consts); ++i) {
-        printf("%s\n", consts[i].key);
-      }
       if (parsed_info->consts == NULL) {
         parsed_info->consts = consts;
       } else {
