@@ -1,11 +1,14 @@
 CC = clang
 CFLAGS =-Wall -Wextra
-INCLUDES =-I"../prism/include"
-LIBS=-L"../prism/build"
+INCLUDES =-I"prism/include"
+LIBS=-L"prism/build"
 
 .PHONY: frls
 
-frls:
+prism_static:
+	cd prism && $(MAKE) static
+
+frls: prism_static
 	$(CC) $(CFLAGS) -c cJSON.c -o cJSON.o
 	$(CC) $(CFLAGS) -c optparser.c -o optparser.o
 	$(CC) $(CFLAGS) -c utils.c -o utils.o
