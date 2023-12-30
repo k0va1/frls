@@ -8,7 +8,7 @@
 #include "utils.h"
 
 Config *create_config(int argc, char *argv[]) {
-  Config *config = malloc(sizeof(Config *));
+  Config *config = malloc(sizeof(config));
   config->host = HOST;
   config->port = PORT;
 
@@ -58,5 +58,10 @@ void print_config(Config *config) {
 }
 
 void destroy_config(Config *config) {
-  printf("Destroy config\n");
+  free(config->host);
+  free(config->project_root);
+  free(config->client_name);
+  free(config->client_version);
+  cJSON_free(config->client_capabilities);
+  free(config);
 }

@@ -26,7 +26,7 @@ ArgKV *parse_options(int argc, char *argv[], size_t *length) {
 
   *length = argc - 1;
   ArgKV *arg_kvs = malloc(sizeof(ArgKV) * *length);
-  for (size_t i = 1; i < argc; i++) {
+  for (int i = 1; i < argc; i++) {
     char *kv = argv[i];
     char *key = strtok(kv, "=");
     if (key == NULL) {

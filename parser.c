@@ -12,9 +12,8 @@ int get_line(pm_parser_t *parser, pm_diagnostic_t *error) {
   const uint8_t *source_start = parser->start;
   const uint8_t *error_line_start = error->location.start;
   int line = 1;
-  int ch = 0;
 
-  for (uint8_t *c = source_start; c < error_line_start; c++) {
+  for (uint8_t *c = (uint8_t *)source_start; c < error_line_start; c++) {
     if (*c == '\n') {
       line++;
     }
@@ -83,7 +82,7 @@ ConstHM *build_const_map(char *file_path, pm_parser_t *parser, pm_node_t *node,
         pm_constant_pool_id_to_constant(&parser->constant_pool, cast->name);
     Const *c = malloc(sizeof(c));
     c->locations = l;
-    c->const_name = strndup(constant->start, constant->length);
+    c->const_name = strndup((char *)constant->start, constant->length);
     shput(consts, c->const_name, c);
     break;
   }
@@ -147,8 +146,6 @@ void parse(char *file_path, ParsedInfo *parsed_info) {
 
   pm_node_t *root = pm_parse(&parser);
   if (root != NULL) {
-    pm_buffer_t buffer = {0};
-
     print_errors(&parser);
 
     ConstHM *consts = NULL;
