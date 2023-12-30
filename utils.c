@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <stdbool.h>
 
 #include "utils.h"
 
@@ -88,7 +89,7 @@ void log_error(char *msg, ...) {
 }
 
 // File utils
-int is_dir(char *file_path) {
+bool is_dir(char *file_path) {
   int fd = open(file_path, O_RDONLY, 0);
   if (fd == -1)
     return -1;
@@ -100,7 +101,7 @@ int is_dir(char *file_path) {
   return (stat_buf.st_mode & S_IFMT) == S_IFDIR ? 1 : 0;
 }
 
-int is_file(char *file_path) {
+bool is_file(char *file_path) {
   int fd = open(file_path, O_RDONLY, 0);
   if (fd == -1)
     return -1;
