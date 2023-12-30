@@ -5,9 +5,6 @@ LIBS=-L"prism/build"
 
 .PHONY: frls
 
-prism_static:
-	cd prism && $(MAKE) static
-
 frls: prism_static
 	$(CC) $(CFLAGS) -c cJSON.c -o cJSON.o
 	$(CC) $(CFLAGS) -c optparser.c -o optparser.o
@@ -19,3 +16,6 @@ frls: prism_static
 	$(CC) $(CFLAGS) $(INCLUDES) -c parser.c -o parser.o
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) frls.c cJSON.o optparser.o config.o commands.o utils.o transport.o server.o parser.o -lprism -o frls
 	./frls
+
+prism_static:
+	cd prism && $(MAKE) static
