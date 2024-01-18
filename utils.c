@@ -3,12 +3,12 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <stdbool.h>
 
 #include "utils.h"
 
@@ -21,7 +21,7 @@ char *trim(char *c) {
   return c;
 }
 
-bool is_ends_with(char *left, char *right) {
+bool is_ends_with(char *left, const char *right) {
   if (left == NULL || right == NULL)
     return false;
 
@@ -41,6 +41,18 @@ bool is_starts_with(char *left, char *right) {
       return false;
   }
   return true;
+}
+
+bool is_includes(const char **arr, char *str) {
+  if (arr == NULL || str == NULL)
+    return false;
+
+  for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); ++i) {
+    if (strcmp(arr[i], str) == 0)
+      return true;
+  }
+
+  return false;
 }
 
 char *delete_prefix(char *str, char *prefix) {
@@ -63,6 +75,15 @@ char *remove_leading_dashes(char *arg) {
   }
 
   return arg + dash_count;
+}
+
+char *file_ext(char *file_path) {
+  char *ext = strrchr(file_path, '.');
+  if (ext) {
+    return ext;
+  } else {
+    return NULL;
+  }
 }
 
 void fail(char *msg) {
