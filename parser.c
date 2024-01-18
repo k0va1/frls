@@ -142,7 +142,7 @@ void parse(char *file_path, ParsedInfo *parsed_info) {
   size_t length = strlen(source);
 
   pm_parser_t parser;
-  pm_parser_init(&parser, source, length, NULL);
+  pm_parser_init(&parser, (const uint8_t *)source, length, NULL);
 
   pm_node_t *root = pm_parse(&parser);
   if (root != NULL) {
