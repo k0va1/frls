@@ -4,13 +4,11 @@ Content-Type: application/vscode-jsonrpc; charset=utf-8
 {
   "jsonrpc": "2.0",
   "id": 1,
-  "method": "textDocument/didOpen",
+  "method": "textDocument/didClose",
   "params": {
     "textDocument": {
       "uri": "file:///Users/k0va1/dev/frls/fixtures/project/lib/project.rb",
-      "languageId": "ruby",
-      "version": 1,
-      "text": "puts 'hello world'"
+      "version": 1
     }
   }
 }

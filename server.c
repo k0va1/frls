@@ -17,6 +17,7 @@ Server *create_server(Config *config) {
   server->config = config;
   server->status = UNINITIALIZED;
   server->parsed_info = malloc(sizeof(server->parsed_info));
+  server->sources = NULL;
 
   if ((server->server_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     fail("Couldn't initialize socket");
@@ -74,4 +75,6 @@ void accept_message(Server *server, char *buffer) {
   }
 }
 
-void destroy_server(Server *server) { printf("Destroy server\n"); }
+void destroy_server(Server *server) {
+  free(server);
+}

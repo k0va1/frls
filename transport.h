@@ -1,6 +1,6 @@
 #include "./cJSON.h"
-#include "stdlib.h"
 #include "server.h"
+#include "stdlib.h"
 
 #ifndef TRANSPORT_H_INCLUDED
 #define TRANSPORT_H_INCLUDED
@@ -35,7 +35,7 @@ typedef struct {
 enum ErrorCodes {
   // Defined by JSON-RPC
   ParseError = -32700,
-  InvalidRequest = -32600,
+  INVALID_REQUEST = -32600,
   MethodNotFound = -32601,
   InvalidParams = -32602,
   InternalError = -32603,
@@ -129,6 +129,8 @@ Request *create_request(char *headers_str);
 Response *create_response();
 
 void uninitialized_error(Server *server);
+void invalid_request(Server *server);
+void send_error(Server *server, char *error_msg, int err_code);
 void send_response(int socket, int status, char *body);
 void destroy_headers(Headers *headers);
 void destroy_request(Request *request);

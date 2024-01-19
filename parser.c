@@ -73,9 +73,6 @@ ConstHM *build_const_map(char *file_path, pm_parser_t *parser, pm_node_t *node,
     pm_constant_read_node_t *cast = (pm_constant_read_node_t *)node;
     // TODO: add constants line and column to location struct
     // printf("location: row=%d, col=%d\n", &node->location.start)
-
-    pm_line_column_t start = pm_newline_list_line_column(&parser->newline_list,
-                                                         node->location.start);
     Location *l = malloc(sizeof(l));
     l->file_path = strndup(file_path, strlen(file_path));
     pm_constant_t *constant =
@@ -137,19 +134,17 @@ void print_errors(pm_parser_t *parser) {
   }
 }
 
-void parse(char *file_path, ParsedInfo *parsed_info) {
-  char *source = readall(file_path);
-  size_t length = strlen(source);
-
+void parse(Source *source, ParsedInfo *parsed_info) {
   pm_parser_t parser;
-  pm_parser_init(&parser, (const uint8_t *)source, length, NULL);
+  pm_parser_init(&parser, (const uint8_t *)source->content,
+                 strlen(source->content), NULL);
 
   pm_node_t *root = pm_parse(&parser);
   if (root != NULL) {
     print_errors(&parser);
 
     ConstHM *consts = NULL;
-    consts = build_const_map(file_path, &parser, root, consts);
+    consts = build_const_map(source->file_path, &parser, root, consts);
 
     if (consts != NULL) {
       log_info("Const Map built, len: %zu", hmlen(consts));

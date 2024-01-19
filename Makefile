@@ -14,7 +14,8 @@ frls: prism_static
 	$(CC) $(CFLAGS) $(INCLUDES) -c commands.c -o commands.o
 	$(CC) $(CFLAGS) $(INCLUDES) -c server.c -o server.o
 	$(CC) $(CFLAGS) $(INCLUDES) -c parser.c -o parser.o
-	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) frls.c cJSON.o optparser.o config.o commands.o utils.o transport.o server.o parser.o -lprism -o frls
+	$(CC) $(CFLAGS) $(INCLUDES) -c source.c -o source.o
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) frls.c cJSON.o optparser.o config.o commands.o utils.o transport.o server.o parser.o source.o -lprism -o frls
 	./frls
 
 prism_static:

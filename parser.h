@@ -1,4 +1,5 @@
 #include "prism.h"
+#include "source.h"
 
 #ifndef PARSER_H_INCLUDED
 #define PARSER_H_INCLUDED
@@ -23,6 +24,6 @@ typedef struct {
   ConstHM *consts;
 } ParsedInfo;
 
-void parse(char *file_path, ParsedInfo *parsed_info);
+void parse(Source *source, ParsedInfo *parsed_info);
 
 #endif
