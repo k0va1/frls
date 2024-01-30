@@ -104,7 +104,7 @@ void initialize(Server *server, Request *request) {
   const cJSON *process_id =
       cJSON_GetObjectItemCaseSensitive(request->params, "processId");
   if (cJSON_IsNumber(process_id)) {
-    config->parent_process_id = process_id->valueint;
+    config->client_process_id = process_id->valueint;
   }
   const cJSON *client_info =
       cJSON_GetObjectItemCaseSensitive(request->params, "clientInfo");
@@ -143,9 +143,37 @@ void initialize(Server *server, Request *request) {
   }
 
   server->status = INITIALIZED;
+
+  cJSON *result = cJSON_CreateObject();
+  cJSON *response = cJSON_CreateObject();
+  cJSON *server_info = cJSON_CreateObject();
+  cJSON_AddItemToObject(server_info, "name", cJSON_CreateString(SERVER_NAME));
+  cJSON_AddItemToObject(server_info, "version",
+                        cJSON_CreateString(FRLS_VERSION));
+  cJSON_AddItemToObject(result, "serverInfo", server_info);
+
+  cJSON *server_capabilities = cJSON_CreateObject();
+
+  cJSON_AddItemToObject(result, "capabilities", server_capabilities);
+  cJSON *text_document_sync = cJSON_CreateObject();
+
+  cJSON_AddItemToObject(text_document_sync, "openClose",
+                        cJSON_CreateBool(true));
+  // FULL
+  // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentSyncKind
+  cJSON_AddItemToObject(text_document_sync, "change", cJSON_CreateNumber(1));
+  cJSON_AddItemToObject(server_capabilities, "textDocumentSync", cJSON_CreateNumber(1));
+
+  cJSON *req_id = cJSON_CreateNumber(1);
+  cJSON_AddItemToObject(response, "id", req_id);
+  cJSON_AddItemToObject(response, "result", result);
+
+  char *json_str = cJSON_PrintUnformatted(response);
+  send_response(server->client_socket, 200, json_str);
   log_info("Server initialized");
   print_config(server->config);
-  print_sources(server->sources);
+  //print_sources(server->sources);
+  cJSON_Delete(response);
 }
 
 void shutdown_server(Server *server) {
@@ -215,7 +243,7 @@ void text_document_did_open(Server *server, Request *request) {
         source = add_source(server, file_path, text);
         source->open_status = OPENED;
       }
-      print_sources(server->sources);
+//      print_sources(server->sources);
     }
   } else {
     log_error("Couldn't parse text document");
@@ -267,7 +295,7 @@ void text_document_did_change(Server *server, Request *request) {
           log_error("Source should be opened first");
           return;
         }
-        print_sources(server->sources);
+       // print_sources(server->sources);
       }
     }
   } else {
@@ -300,10 +328,15 @@ void text_document_did_close(Server *server, Request *request) {
   Source *source = get_source(server, file_path);
   if (source) {
     source->open_status = CLOSED;
+    log_info("Source closed");
   } else {
     log_error("Source not found");
     return;
   }
 
-  print_sources(server->sources);
+  //print_sources(server->sources);
+}
+
+void initialized(Server *server) {
+  log_info("Initialized");
 }

@@ -51,8 +51,8 @@ void print_config(Config *config) {
   log_info("Config contents:");
   printf("Host: %s\n", config->host);
   printf("Port: %d\n", config->port);
-  printf("Parent process id: %d\n", config->parent_process_id);
   printf("Project root: %s\n", config->project_root);
+  printf("Client process id: %d\n", config->client_process_id);
   printf("Client name: %s\n", config->client_name);
   printf("Client version: %s\n", config->client_version);
 }

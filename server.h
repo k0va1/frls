@@ -14,12 +14,14 @@ typedef struct {
   SeverStatus status;
   int server_socket;
   int client_socket;
+  int queue;
   struct sockaddr_in *server_address;
   struct sockaddr_in *client_address;
 } Server;
 
 void sync_source(Server *server, char *file_path, char *text);
 Server *create_server(Config *config);
+void start_server(Server *server);
 void destroy_server(Server *server);
-void accept_message(Server *server, char *buffer);
+void accept_message(Server *server);
 #endif

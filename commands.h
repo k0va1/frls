@@ -7,6 +7,7 @@
 #define COMMANDS_H_INCLUDED
 
 void initialize(Server *server, Request *request);
+void initialized(Server *server);
 void shutdown_server(Server *server);
 void exit_server(Server *server);
 

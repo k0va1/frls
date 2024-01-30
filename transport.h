@@ -6,7 +6,7 @@
 #define TRANSPORT_H_INCLUDED
 
 #define DEFAULT_CHARSET "utf-8"
-#define MESSAGE_BUFFER 64000
+#define MESSAGE_BUFFER_SIZE 64000
 
 typedef struct {
   char *content_type;

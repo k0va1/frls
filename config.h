@@ -6,6 +6,7 @@
 #define CONFIG_H_INCLUDED
 
 // CLI stuff
+#define SERVER_NAME "frls"
 #define FRLS_VERSION "0.0.1"
 #define HELP_MESSAGE                                                           \
   "\n\
@@ -25,7 +26,7 @@ OPTIONS:\n\
 
 typedef struct {
   uint port;
-  uint parent_process_id;
+  uint client_process_id;
   char *host;
   char *project_root;
   char *client_name;

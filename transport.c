@@ -7,7 +7,7 @@
 #include <sys/socket.h>
 
 Headers *create_headers(char *headers_str) {
-  Headers *headers = malloc(sizeof(*headers));
+  Headers *headers = malloc(sizeof(Headers));
   char *separator = "\r\n";
 
   char *tail = strstr(headers_str, separator);
@@ -44,6 +44,10 @@ Headers *create_headers(char *headers_str) {
     headers_str = tail + strlen(separator);
     tail = strstr(headers_str, "\r\n");
   }
+  if(headers->charset == NULL) {
+    headers->charset = strdup(DEFAULT_CHARSET);
+  }
+
   return headers;
 }
 
@@ -120,8 +124,8 @@ void send_response(int socket, int status, char *body) {
     return;
   }
 
-  char response_message[MESSAGE_BUFFER] = {'\0'};
-  int msg_len = snprintf(response_message, MESSAGE_BUFFER, template, status,
+  char response_message[MESSAGE_BUFFER_SIZE] = {'\0'};
+  int msg_len = snprintf(response_message, MESSAGE_BUFFER_SIZE, template, status,
                          status_msg, content_length, body);
   if (send(socket, response_message, msg_len, 0) < 0) {
     log_error("Couldn't send response because of %s", strerror(errno));
