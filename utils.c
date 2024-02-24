@@ -86,6 +86,15 @@ char *file_ext(char *file_path) {
   }
 }
 
+char *file_name(char *file_path) {
+  char *name = strrchr(file_path, '/');
+  if (name) {
+    return name + 1;
+  } else {
+    return NULL;
+  }
+}
+
 void fail(char *msg) {
   fprintf(stderr, "[ERROR] %s: %s\n", msg, strerror(errno));
   exit(-1);

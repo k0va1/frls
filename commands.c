@@ -1,4 +1,5 @@
 #include "commands.h"
+#include "ignore.h"
 #include "parser.h"
 #include "source.h"
 #include "stb_ds.h"
@@ -48,6 +49,9 @@ void sync_source(Server *server, char *file_path, char *content) {
 }
 
 void process_file(Server *server, char *file_path) {
+  if (is_ignored_file(file_path))
+    return;
+
   log_info("Processing file `%s`", file_path);
   if (is_includes(SUPPORTED_FILE_EXTENSIONS, file_ext(file_path))) {
     char *content = readall(file_path);
@@ -79,7 +83,8 @@ void process_file_tree(Server *server, char *root_path) {
       sprintf(file_path, "%s/%s", root_path, dir->d_name);
 
       if (dir->d_type == DT_DIR) {
-        if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0) {
+        if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0 ||
+            is_ignored_dir(file_path)) {
           continue;
         }
         process_file_tree(server, file_path);
