@@ -132,49 +132,6 @@ void send_response(int socket, int status, char *body) {
   }
 }
 
-void send_error(Server *server, char *error_msg, int err_code) {
-  cJSON *jsonrpc = NULL;
-  cJSON *req_id = NULL;
-  cJSON *code = NULL;
-  cJSON *message = NULL;
-
-  cJSON *body = cJSON_CreateObject();
-  cJSON *error = cJSON_CreateObject();
-
-  code = cJSON_CreateNumber(err_code);
-  log_error(error_msg);
-  message = cJSON_CreateString(error_msg);
-  cJSON_AddItemToObject(error, "code", code);
-  cJSON_AddItemToObject(error, "message", message);
-
-  jsonrpc = cJSON_CreateString("2.0");
-  req_id = cJSON_CreateNumber(1);
-
-  cJSON_AddItemToObject(body, "jsonrpc", jsonrpc);
-  cJSON_AddItemToObject(body, "id", req_id);
-  cJSON_AddItemToObject(body, "error", error);
-
-  char *json_str = cJSON_PrintUnformatted(body);
-  send_response(server->client_socket, 200, json_str);
-  cJSON_Delete(body);
-}
-
-void uninitialized_error(Server *server) {
-  send_error(
-      server,
-      "Server hasn't been initialized yet. Send `initialize` request first: "
-      "https://microsoft.github.io/language-server-protocol/specifications/lsp/"
-      "3.17/specification/#initialize",
-      SERVER_NOT_INITIALIZED);
-}
-
-void invalid_request(Server *server) {
-  send_error(server,
-             "Server has been shutted down: "
-             "https://microsoft.github.io/language-server-protocol/"
-             "specifications/lsp/3.17/specification/#shutdown",
-             INVALID_REQUEST);
-}
 
 void destroy_headers(Headers *headers) {
   free(headers->content_type);

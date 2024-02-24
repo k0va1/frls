@@ -96,7 +96,7 @@ void process_file_tree(Server *server, char *root_path) {
   }
 }
 
-void initialize(Server *server, Request *request) {
+void initialize(Server *server, Client *client, Request *request) {
   log_info("Initializing...");
 
   Config *config = server->config;
@@ -162,24 +162,26 @@ void initialize(Server *server, Request *request) {
   // FULL
   // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentSyncKind
   cJSON_AddItemToObject(text_document_sync, "change", cJSON_CreateNumber(1));
-  cJSON_AddItemToObject(server_capabilities, "textDocumentSync", cJSON_CreateNumber(1));
+  cJSON_AddItemToObject(server_capabilities, "textDocumentSync",
+                        cJSON_CreateNumber(1));
 
   cJSON *req_id = cJSON_CreateNumber(1);
   cJSON_AddItemToObject(response, "id", req_id);
   cJSON_AddItemToObject(response, "result", result);
 
   char *json_str = cJSON_PrintUnformatted(response);
-  send_response(server->client_socket, 200, json_str);
+  send_response(client->socket, 200, json_str);
   log_info("Server initialized");
   print_config(server->config);
-  //print_sources(server->sources);
+  print_sources(server->sources);
   cJSON_Delete(response);
 }
 
-void shutdown_server(Server *server) {
+void shutdown_server(Server *server, Client *client) {
   log_info("Shutting down");
   server->status = SHUTDOWN;
-  send_response(server->client_socket, 200, "");
+TODO:
+  send_response(client->socket, 200, "");
 }
 
 void exit_server(Server *server) {
@@ -191,7 +193,7 @@ void exit_server(Server *server) {
   }
 }
 
-void text_document_did_open(Server *server, Request *request) {
+void text_document_did_open(Server *server, Client *client, Request *request) {
   log_info("Opening document...");
   const cJSON *text_document =
       cJSON_GetObjectItemCaseSensitive(request->params, "textDocument");
@@ -243,7 +245,7 @@ void text_document_did_open(Server *server, Request *request) {
         source = add_source(server, file_path, text);
         source->open_status = OPENED;
       }
-//      print_sources(server->sources);
+      print_sources(server->sources);
     }
   } else {
     log_error("Couldn't parse text document");
@@ -251,7 +253,8 @@ void text_document_did_open(Server *server, Request *request) {
   }
 }
 
-void text_document_did_change(Server *server, Request *request) {
+void text_document_did_change(Server *server, Client *client,
+                              Request *request) {
   log_info("Changing document...");
   const cJSON *text_document =
       cJSON_GetObjectItemCaseSensitive(request->params, "textDocument");
@@ -295,7 +298,7 @@ void text_document_did_change(Server *server, Request *request) {
           log_error("Source should be opened first");
           return;
         }
-       // print_sources(server->sources);
+        print_sources(server->sources);
       }
     }
   } else {
@@ -334,9 +337,7 @@ void text_document_did_close(Server *server, Request *request) {
     return;
   }
 
-  //print_sources(server->sources);
+  print_sources(server->sources);
 }
 
-void initialized(Server *server) {
-  log_info("Initialized");
-}
+void initialized(Server *server, Client *client) { log_info("Initialized"); }

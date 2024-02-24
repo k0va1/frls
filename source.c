@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 void print_sources(Source **sources) {
+  return;
   log_info("Total sources: %d", arrlen(sources));
   log_info("Sources info:");
   Source *source;

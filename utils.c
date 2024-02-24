@@ -87,7 +87,7 @@ char *file_ext(char *file_path) {
 }
 
 void fail(char *msg) {
-  fprintf(stderr, "[ERROR] %s: %s", msg, strerror(errno));
+  fprintf(stderr, "[ERROR] %s: %s\n", msg, strerror(errno));
   exit(-1);
 }
 

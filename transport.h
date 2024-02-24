@@ -1,10 +1,11 @@
 #include "./cJSON.h"
-#include "server.h"
 #include "stdlib.h"
+#include <sys/socket.h>
 
 #ifndef TRANSPORT_H_INCLUDED
 #define TRANSPORT_H_INCLUDED
 
+#define SOCKET int
 #define DEFAULT_CHARSET "utf-8"
 #define MESSAGE_BUFFER_SIZE 64000
 
@@ -31,6 +32,16 @@ typedef struct {
   char *result;
   Error *error;
 } Response;
+
+typedef struct Client Client;
+struct Client {
+  socklen_t address_length;
+  struct sockaddr_storage address;
+  SOCKET socket;
+  char request[MESSAGE_BUFFER_SIZE];
+  int received;
+  Client *next;
+};
 
 enum ErrorCodes {
   // Defined by JSON-RPC
@@ -128,9 +139,6 @@ Headers *create_headers(char *headers_str);
 Request *create_request(char *headers_str);
 Response *create_response();
 
-void uninitialized_error(Server *server);
-void invalid_request(Server *server);
-void send_error(Server *server, char *error_msg, int err_code);
 void send_response(int socket, int status, char *body);
 void destroy_headers(Headers *headers);
 void destroy_request(Request *request);
