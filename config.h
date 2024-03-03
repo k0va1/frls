@@ -1,6 +1,6 @@
-#include <sys/types.h>
-#include <stdbool.h>
 #include "cJSON.h"
+#include <stdbool.h>
+#include <sys/types.h>
 
 #ifndef CONFIG_H_INCLUDED
 #define CONFIG_H_INCLUDED
@@ -8,7 +8,7 @@
 // CLI stuff
 #define SERVER_NAME "frls"
 #define FRLS_VERSION "0.0.1"
-#define HELP_MESSAGE                                                           \
+#define HELP_MESSAGE                                                                               \
   "\n\
 OVERVIEW: Fast Ruby Language Server\n\
 \n\
