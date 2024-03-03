@@ -1,0 +1,5 @@
+clang
+%c -std=c11
+%h --include=../prism/include
+-I../prism/include
+-DMACRO
