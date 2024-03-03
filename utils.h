@@ -13,6 +13,7 @@ bool is_file(char *file_path);
 bool is_ends_with(char *left, const char *right);
 bool is_starts_with(char *left, char *right);
 bool is_includes(const char **arr, char *str);
+char *concat_strings(const char *str1, const char *str2);
 char *file_ext(char *file_path);
 char *file_name(char *file_path);
 char *delete_prefix(char *str, char *prefix);

@@ -1,14 +1,14 @@
-#include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "optparser.h"
 #include "config.h"
+#include "optparser.h"
 #include "utils.h"
 
 Config *create_config(int argc, char *argv[]) {
-  Config *config = malloc(sizeof(config));
+  Config *config = malloc(sizeof(Config));
   config->host = HOST;
   config->port = PORT;
 

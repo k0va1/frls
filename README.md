@@ -2,10 +2,6 @@
 
 Yet another one impementation of Ruby Language Server. Currentrly in progress
 
-### Development
-
-Build and run: `make`
-
 #### Available CLI arguments
 
 `--help, -h`: help info
@@ -21,3 +17,9 @@ Build and run: `make`
 ```bash
 cat fixtures/initialize.txt | curl telnet://127.0.0.1:1488
 ```
+
+### Development
+
+Build and run: `make`
+
+Run tests: `make test`

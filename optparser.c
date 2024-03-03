@@ -30,8 +30,7 @@ ArgKV *parse_options(int argc, char *argv[], size_t *length) {
     char *kv = argv[i];
     char *key = strtok(kv, "=");
     if (key == NULL) {
-      fprintf(stderr,
-              "Invalid arguments: provide arguments in `--key=value` format\n");
+      fprintf(stderr, "Invalid arguments: provide arguments in `--key=value` format\n");
       exit(1);
     }
 

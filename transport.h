@@ -16,6 +16,7 @@ typedef struct {
 } Headers;
 
 typedef struct {
+  int id;
   Headers *headers;
   char *method;
   cJSON *params;
@@ -48,7 +49,7 @@ enum ErrorCodes {
   ParseError = -32700,
   INVALID_REQUEST = -32600,
   MethodNotFound = -32601,
-  InvalidParams = -32602,
+  INVALID_PARAMS = -32602,
   InternalError = -32603,
 
   /**

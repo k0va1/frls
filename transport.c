@@ -44,7 +44,7 @@ Headers *create_headers(char *headers_str) {
     headers_str = tail + strlen(separator);
     tail = strstr(headers_str, "\r\n");
   }
-  if(headers->charset == NULL) {
+  if (headers->charset == NULL) {
     headers->charset = strdup(DEFAULT_CHARSET);
   }
 
@@ -75,8 +75,7 @@ Request *create_request(char *request) {
   log_info("Content length: %zu", *headers->content_length);
 
   if (strcasecmp(headers->charset, DEFAULT_CHARSET) != 0) {
-    log_error("Unsupported charset: %s. Tool supports utf-8 only\n",
-              headers->charset);
+    log_error("Unsupported charset: %s. Tool supports utf-8 only\n", headers->charset);
     destroy_headers(headers);
     return NULL;
   }
@@ -93,6 +92,11 @@ Request *create_request(char *request) {
 
   Request *req = malloc(sizeof(Request));
   req->headers = headers;
+
+  cJSON *id = cJSON_GetObjectItem(body, "id");
+  if (cJSON_IsNumber(id)) {
+    req->id = id->valueint;
+  }
 
   cJSON *method = cJSON_GetObjectItem(body, "method");
   if (cJSON_IsString(method) && (method->valuestring != NULL)) {
@@ -125,13 +129,12 @@ void send_response(int socket, int status, char *body) {
   }
 
   char response_message[MESSAGE_BUFFER_SIZE] = {'\0'};
-  int msg_len = snprintf(response_message, MESSAGE_BUFFER_SIZE, template, status,
-                         status_msg, content_length, body);
+  int msg_len = snprintf(response_message, MESSAGE_BUFFER_SIZE, template, status, status_msg,
+                         content_length, body);
   if (send(socket, response_message, msg_len, 0) < 0) {
     log_error("Couldn't send response because of %s", strerror(errno));
   }
 }
-
 
 void destroy_headers(Headers *headers) {
   free(headers->content_type);
