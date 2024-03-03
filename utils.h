@@ -19,6 +19,7 @@ char *file_name(char *file_path);
 char *delete_prefix(char *str, char *prefix);
 char *remove_leading_dashes(char *str);
 char *get_file_path(char *uri);
+char *build_uri(char *file_path);
 char *readall(char *file_path);
 
 #endif

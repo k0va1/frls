@@ -163,6 +163,12 @@ char *get_file_path(char *uri) {
   return delete_prefix(uri, "file://");
 }
 
+char *build_uri(char *file_path) {
+  assert(file_path != NULL);
+
+  return concat_strings("file://", file_path);
+}
+
 char *readall(char *file_path) {
   FILE *f = fopen(file_path, "rb");
   fseek(f, 0, SEEK_END);
