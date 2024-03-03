@@ -8,7 +8,7 @@
 #include "utils.h"
 
 Config *create_config(int argc, char *argv[]) {
-  Config *config = malloc(sizeof(config));
+  Config *config = malloc(sizeof(Config));
   config->host = HOST;
   config->port = PORT;
 

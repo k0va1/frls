@@ -13,6 +13,9 @@ void print_sources(Source **sources) {
     source = sources[i];
     printf("File path: %s\n", source->file_path);
     printf("Content:\n%s\n", source->content);
+    printf("Root ptr: %d\n", source->root);
+    printf("Parser ptr:%d\n", source->parser);
+
     char *opened_status;
     switch (source->open_status) {
     case OPENED:

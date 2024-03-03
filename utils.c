@@ -77,6 +77,21 @@ char *remove_leading_dashes(char *arg) {
   return arg + dash_count;
 }
 
+char *concat_strings(const char *str1, const char *str2) {
+  size_t len1 = strlen(str1);
+  size_t len2 = strlen(str2);
+  char *result = malloc(len1 + len2 + 1); // +1 for the null terminator
+
+  if (result == NULL) {
+    fail("concat_strings: malloc failed");
+  }
+
+  strcpy(result, str1);
+  strcat(result, str2);
+
+  return result;
+}
+
 char *file_ext(char *file_path) {
   char *ext = strrchr(file_path, '.');
   if (ext) {
@@ -97,7 +112,7 @@ char *file_name(char *file_path) {
 
 void fail(char *msg) {
   fprintf(stderr, "[ERROR] %s: %s\n", msg, strerror(errno));
-  exit(-1);
+  exit(EXIT_FAILURE);
 }
 
 void log_info(char *msg, ...) {

@@ -47,9 +47,8 @@ Client *create_client() {
 Client *add_client(Server *server) {
   Client *client = create_client();
   client->next = server->clients;
-  client->socket =
-      accept(server->server_socket, (struct sockaddr *)&(client->address),
-             &(client->address_length));
+  client->socket = accept(server->server_socket, (struct sockaddr *)&(client->address),
+                          &(client->address_length));
 
   if (client->socket < 0) {
     fail("accept() failed");
@@ -75,7 +74,7 @@ void wait_on_clients(Server *server) {
   }
 }
 
-void send_error(Client *client, char *error_msg, int err_code) {
+void send_error(Client *client, Request *req, char *error_msg, int err_code) {
   cJSON *jsonrpc = NULL;
   cJSON *req_id = NULL;
   cJSON *code = NULL;
@@ -91,7 +90,7 @@ void send_error(Client *client, char *error_msg, int err_code) {
   cJSON_AddItemToObject(error, "message", message);
 
   jsonrpc = cJSON_CreateString("2.0");
-  req_id = cJSON_CreateNumber(1);
+  req_id = cJSON_CreateNumber(req->id);
 
   cJSON_AddItemToObject(body, "jsonrpc", jsonrpc);
   cJSON_AddItemToObject(body, "id", req_id);
@@ -102,21 +101,27 @@ void send_error(Client *client, char *error_msg, int err_code) {
   cJSON_Delete(body);
 }
 
-void uninitialized_error(Client *client) {
-  send_error(
-      client,
-      "Server hasn't been initialized yet. Send `initialize` request first: "
-      "https://microsoft.github.io/language-server-protocol/specifications/lsp/"
-      "3.17/specification/#initialize",
-      SERVER_NOT_INITIALIZED);
+void uninitialized_error(Client *client, Request *req) {
+  send_error(client, req,
+             "Server hasn't been initialized yet. Send `initialize` request first: "
+             "https://microsoft.github.io/language-server-protocol/specifications/lsp/"
+             "3.17/specification/#initialize",
+             SERVER_NOT_INITIALIZED);
 }
 
-void invalid_request(Client *client) {
-  send_error(client,
+void invalid_request(Client *client, Request *req) {
+  send_error(client, req,
              "Server has been shutted down: "
              "https://microsoft.github.io/language-server-protocol/"
              "specifications/lsp/3.17/specification/#shutdown",
              INVALID_REQUEST);
+}
+
+void invalid_params(Client *client, Request *req) {
+  char *params = cJSON_PrintUnformatted(req->params);
+  char *msg = concat_strings("Invalid params: ", params);
+  send_error(client, req, msg, INVALID_PARAMS);
+  free(msg);
 }
 
 void process_client_message(Server *server, Client *client) {
@@ -139,6 +144,9 @@ void process_client_message(Server *server, Client *client) {
         text_document_did_change(server, client, req);
       } else if (strcmp(method, "textDocument/didClose") == 0) {
         text_document_did_close(server, req);
+        // Language features
+      } else if (strcmp(method, "textDocument/definition") == 0) {
+        go_to_definition(server, client, req);
       } else {
         fprintf(stderr, "Unsupported method `%s`\n", method);
       }
@@ -148,12 +156,12 @@ void process_client_message(Server *server, Client *client) {
       if (strcmp(method, "initialize") == 0) {
         initialize(server, client, req);
       } else {
-        uninitialized_error(client);
+        uninitialized_error(client, req);
       }
       break;
     }
     case SHUTDOWN: {
-      invalid_request(client);
+      invalid_request(client, req);
       break;
     }
     }
@@ -177,8 +185,7 @@ void create_bind_address(struct addrinfo **bind_address, Config *config) {
 void create_socket(struct addrinfo *bind_address, Server *server) {
   log_info("Creating socket...");
   server->server_socket =
-      socket(bind_address->ai_family, bind_address->ai_socktype,
-             bind_address->ai_protocol);
+      socket(bind_address->ai_family, bind_address->ai_socktype, bind_address->ai_protocol);
   if (server->server_socket < 0) {
     fail("Couldn't initialize socket");
   }
@@ -186,8 +193,8 @@ void create_socket(struct addrinfo *bind_address, Server *server) {
   // Allow socket descriptor to be reuseable
   int option = 1;
   log_info("Setting socket options...");
-  if (setsockopt(server->server_socket, SOL_SOCKET, SO_REUSEADDR,
-                 (char *)&option, sizeof(option)) < 0) {
+  if (setsockopt(server->server_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&option, sizeof(option)) <
+      0) {
     close(server->server_socket);
     fail("Couldn't set socket options");
   }
@@ -201,8 +208,7 @@ void create_socket(struct addrinfo *bind_address, Server *server) {
 
 void bind_and_listen(struct addrinfo *bind_address, Server *server) {
   log_info("Binding socket...");
-  if (bind(server->server_socket, bind_address->ai_addr,
-           bind_address->ai_addrlen) < 0) {
+  if (bind(server->server_socket, bind_address->ai_addr, bind_address->ai_addrlen) < 0) {
     close(server->server_socket);
     fail("Couldn't bind the socket");
   }
@@ -231,7 +237,7 @@ Server *create_server(Config *config) {
   Server *server = malloc(sizeof(Server));
   server->config = config;
   server->status = UNINITIALIZED;
-  server->parsed_info = malloc(sizeof(server->parsed_info));
+  server->parsed_info = calloc(1, sizeof(ParsedInfo));
   server->sources = NULL;
   server->clients = NULL;
   server->master_set = malloc(sizeof(struct fd_set));
@@ -261,8 +267,7 @@ void start_server(Server *server) {
             continue;
           }
           memset(client->request, '\0', MESSAGE_BUFFER_SIZE);
-          int bytes_received =
-              recv(client->socket, client->request, MESSAGE_BUFFER_SIZE, 0);
+          int bytes_received = recv(client->socket, client->request, MESSAGE_BUFFER_SIZE, 0);
 
           if (bytes_received == 0) {
             log_error("Unexpected disconnect");

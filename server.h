@@ -23,9 +23,10 @@ typedef struct {
 
 void sync_source(Server *server, char *file_path, char *text);
 Server *create_server(Config *config);
-void uninitialized_error(Client *client);
-void invalid_request(Client *client);
-void send_error(Client *client, char *error_msg, int err_code);
+void uninitialized_error(Client *client, Request *req);
+void invalid_request(Client *client, Request *req);
+void invalid_params(Client *client, Request *req);
+void send_error(Client *client, Request *req, char *error_msg, int err_code);
 void start_server(Server *server);
 void destroy_server(Server *server);
 void accept_message(Server *server);
