@@ -39,7 +39,8 @@ void sync_source(Server *server, char *file_path, char *content) {
 
   Source *source = get_source(server, file_path);
   if (source) {
-    source->content = content;
+    free(source->content);
+    source->content = strndup(content, strlen(content));
     log_info("Source updated");
   } else {
     source = add_source(server, file_path, content);
@@ -56,6 +57,7 @@ void process_file(Server *server, char *file_path) {
   if (is_includes(SUPPORTED_FILE_EXTENSIONS, file_ext(file_path))) {
     char *content = readall(file_path);
     Source *source = add_source(server, file_path, content);
+    free(content);
     source->open_status = CLOSED;
     parse(source, server->parsed_info);
   } else {
@@ -430,8 +432,10 @@ void go_to_definition(Server *server, Client *client, Request *request) {
     if (arrlen(locations) == 0) {
       cJSON_AddItemToObject(response, "result", cJSON_CreateNull());
     } else if (arrlen(locations) == 1) {
-      cJSON *uri = cJSON_CreateString(locations->file_path);
-      cJSON_AddItemToObject(result, "uri", uri);
+      char *uri = build_uri(locations->file_path);
+      cJSON *json_uri = cJSON_CreateString(uri);
+      cJSON_AddItemToObject(result, "uri", json_uri);
+      free(uri);
 
       cJSON *range = cJSON_CreateObject();
 
@@ -457,8 +461,10 @@ void go_to_definition(Server *server, Client *client, Request *request) {
       for (size_t i = 0; i < arrlen(locations); ++i) {
         cJSON *loc = cJSON_CreateObject();
 
-        cJSON *uri = cJSON_CreateString(locations[i].file_path);
-        cJSON_AddItemToObject(loc, "uri", uri);
+        char *uri = build_uri(locations[i].file_path);
+        cJSON *json_uri = cJSON_CreateString(uri);
+        cJSON_AddItemToObject(loc, "uri", json_uri);
+        free(uri);
 
         cJSON *range = cJSON_CreateObject();
 
