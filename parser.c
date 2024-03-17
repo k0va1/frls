@@ -139,8 +139,20 @@ bool is_equals_locations(Location *l1, Location *l2) {
 }
 
 void parse(Source *source, ParsedInfo *parsed_info) {
-  pm_parser_t *parser;
-  pm_parser_init(parser, (const uint8_t *)source->content, strlen(source->content), NULL);
+  assert(source != NULL);
+
+  if (source->parser != NULL) {
+    pm_parser_free(source->parser);
+  }
+
+  if (source->root != NULL) {
+    free(source->root);
+  }
+
+  pm_parser_t *parser = malloc(sizeof(pm_parser_t));
+  size_t src_len = strlen(source->content);
+  const uint8_t *src = (const uint8_t *)strndup(source->content, src_len);
+  pm_parser_init(parser, src, src_len, NULL);
 
   pm_node_t *root = pm_parse(parser);
   if (root != NULL) {

@@ -68,6 +68,7 @@ Request *create_request(char *request) {
 
   strncpy(headers_str, request, headers_len);
   strncpy(body_str, request + headers_len, body_len);
+  printf("request body %s\n", body_str);
 
   Headers *headers = create_headers(headers_str);
   log_info("Content type: %s", headers->content_type);

@@ -170,7 +170,6 @@ void initialize(Server *server, Client *client, Request *request) {
   send_response(client->socket, 200, json_str);
   log_info("Server initialized");
 
-  print_config(server->config);
   print_sources(server->sources);
   cJSON_Delete(response);
 }
@@ -178,7 +177,6 @@ void initialize(Server *server, Client *client, Request *request) {
 void shutdown_server(Server *server, Client *client) {
   log_info("Shutting down");
   server->status = SHUTDOWN;
-TODO:
   send_response(client->socket, 200, "");
 }
 
@@ -235,10 +233,10 @@ void text_document_did_open(Server *server, Client *client, Request *request) {
           log_error("Source has already been opened");
         }
       } else {
+        log_info("Adding new source");
         source = add_source(server, file_path, text);
         source->open_status = OPENED;
       }
-      print_sources(server->sources);
     }
   } else {
     log_error("Couldn't parse text document");
@@ -288,7 +286,9 @@ void text_document_did_change(Server *server, Client *client, Request *request) 
           log_error("Source should be opened first");
           return;
         }
-        print_sources(server->sources);
+      } else {
+        log_error("Couldn't parse text");
+        return;
       }
     }
   } else {
@@ -322,10 +322,7 @@ void text_document_did_close(Server *server, Request *request) {
     log_info("Source closed");
   } else {
     log_error("Source not found");
-    return;
   }
-
-  print_sources(server->sources);
 }
 
 void initialized(Server *server, Client *client) { log_info("Initialized"); }
@@ -352,28 +349,32 @@ Location *get_locations_by_position(Server *server, Source *source, size_t line,
 
   pm_node_t *node = get_node_by_position(source, line, character);
 
-  if (node != NULL && node_supports_go_to_definition(node)) {
-    switch (PM_NODE_TYPE(node)) {
-    case PM_CONSTANT_READ_NODE: {
-      pm_constant_read_node_t *cast = (pm_constant_read_node_t *)node;
-      pm_line_column_t start = pm_newline_list_line_column(
-          &source->parser->newline_list, node->location.start, source->parser->start_line);
-      pm_constant_t *constant =
-          pm_constant_pool_id_to_constant(&source->parser->constant_pool, cast->name);
+  if (node == NULL) {
+    log_info("Node not found");
+  } else {
+    if (node_supports_go_to_definition(node))
+      switch (PM_NODE_TYPE(node)) {
+      case PM_CONSTANT_READ_NODE: {
+        pm_constant_read_node_t *cast = (pm_constant_read_node_t *)node;
+        pm_line_column_t start = pm_newline_list_line_column(
+            &source->parser->newline_list, node->location.start, source->parser->start_line);
+        pm_constant_t *constant =
+            pm_constant_pool_id_to_constant(&source->parser->constant_pool, cast->name);
 
-      char *node_name = strndup((char *)constant->start, constant->length);
-      for (int i = 0; i < hmlen(server->parsed_info->consts); i++) {
-        if (strcmp(server->parsed_info->consts[i].value->const_name, node_name) == 0) {
-          locs = server->parsed_info->consts[i].value->locations;
+        char *node_name = strndup((char *)constant->start, constant->length);
+        for (int i = 0; i < hmlen(server->parsed_info->consts); i++) {
+          if (strcmp(server->parsed_info->consts[i].value->const_name, node_name) == 0) {
+            locs = server->parsed_info->consts[i].value->locations;
+          }
         }
       }
+      default: {
+        break;
+      }
+      }
+    else {
+      log_info("Node doesn't support go to definition");
     }
-    default: {
-      break;
-    }
-    }
-  } else {
-    log_info("Node not found");
   }
 
   return locs;
