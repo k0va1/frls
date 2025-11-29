@@ -120,7 +120,7 @@ All build artifacts (object files and binaries) are placed in the `build/` direc
 
 - **Prism**: Ruby parser (prism/ submodule)
 - **cJSON**: JSON parsing (vendor/cJSON.c)
-- **stb_ds.h**: Dynamic arrays and hashmaps (include/stb_ds.h)
+- **stb_ds.h**: Dynamic arrays and hashmaps (vendor/stb_ds.h)
 
 ## Testing
 
