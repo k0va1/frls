@@ -1,14 +1,14 @@
 CC = clang
 CFLAGS = -Wall -Wextra
-INCLUDES = -I"include" -I"vendor" -I"prism/include"
-LIBS = -L"prism/build"
+INCLUDES = -I"include" -I"vendor" -I"vendor/prism/include"
+LIBS = -L"vendor/prism/build"
 
 BUILD_DIR = build
 OBJS = $(BUILD_DIR)/cJSON.o $(BUILD_DIR)/optparser.o $(BUILD_DIR)/config.o $(BUILD_DIR)/commands.o \
        $(BUILD_DIR)/utils.o $(BUILD_DIR)/transport.o $(BUILD_DIR)/server.o $(BUILD_DIR)/parser.o \
        $(BUILD_DIR)/source.o $(BUILD_DIR)/ignore.o
 
-.PHONY: start test main clean all
+.PHONY: start test main clean all update-prism
 
 all: frls
 
@@ -52,7 +52,11 @@ $(BUILD_DIR)/source.o: src/source.c include/source.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c src/source.c -o $@
 
 prism_static:
-	cd prism && $(MAKE) static
+	cd vendor/prism && $(MAKE) static
+
+update-prism:
+	git submodule update --remote vendor/prism
+	cd vendor/prism && $(MAKE) clean && $(MAKE) static
 
 test: $(BUILD_DIR) $(OBJS)
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) test/suite.c $(OBJS) -lprism -o $(BUILD_DIR)/suite

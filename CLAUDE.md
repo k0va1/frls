@@ -35,7 +35,12 @@ make clean
 
 **Build Prism static library (required dependency, auto-run by make):**
 ```bash
-cd prism && make static
+cd vendor/prism && make static
+```
+
+**Update Prism submodule to latest version:**
+```bash
+make update-prism
 ```
 
 **Run the executable directly:**
@@ -58,7 +63,7 @@ All build artifacts (object files and binaries) are placed in the `build/` direc
 - Maximum 8 concurrent client connections (MAX_CONNECTIONS)
 
 **Parser (src/parser.c, include/parser.h)**
-- Wraps Prism parser (prism/include/prism.h) for Ruby AST traversal
+- Wraps Prism parser (vendor/prism/include/prism.h) for Ruby AST traversal
 - `parse()`: Parses source files and builds constant map (ConstHM)
 - `traverse_ast()`: Generic visitor pattern for AST traversal
 - `build_const_map()`: Builds hashmap of constants to locations for go-to-definition
@@ -118,7 +123,7 @@ All build artifacts (object files and binaries) are placed in the `build/` direc
 
 ## Dependencies
 
-- **Prism**: Ruby parser (prism/ submodule)
+- **Prism**: Ruby parser (vendor/prism/ submodule)
 - **cJSON**: JSON parsing (vendor/cJSON.c)
 - **stb_ds.h**: Dynamic arrays and hashmaps (vendor/stb_ds.h)
 
