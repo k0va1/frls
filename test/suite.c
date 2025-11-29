@@ -1,4 +1,4 @@
-#include "../commands.h"
+#include "commands.h"
 #include "prism.h"
 #include <assert.h>
 
@@ -22,7 +22,7 @@ void get_node_by_position_test() {
       .content = src,
       .file_path = "hello.rb",
   };
-  pm_parser_t *parser;
+  pm_parser_t *parser = malloc(sizeof(pm_parser_t));
   pm_parser_init(parser, (const uint8_t *)source.content, strlen(source.content), NULL);
 
   pm_node_t *root = pm_parse(parser);

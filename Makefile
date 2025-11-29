@@ -1,34 +1,66 @@
 CC = clang
-CFLAGS =-Wall -Wextra
-INCLUDES =-I"prism/include"
-LIBS=-L"prism/build"
+CFLAGS = -Wall -Wextra
+INCLUDES = -I"include" -I"vendor" -I"prism/include"
+LIBS = -L"prism/build"
 
-.PHONY: frls test main
+BUILD_DIR = build
+OBJS = $(BUILD_DIR)/cJSON.o $(BUILD_DIR)/optparser.o $(BUILD_DIR)/config.o $(BUILD_DIR)/commands.o \
+       $(BUILD_DIR)/utils.o $(BUILD_DIR)/transport.o $(BUILD_DIR)/server.o $(BUILD_DIR)/parser.o \
+       $(BUILD_DIR)/source.o $(BUILD_DIR)/ignore.o
 
-frls: build prism_static
-	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) frls.c cJSON.o optparser.o config.o commands.o utils.o transport.o server.o parser.o source.o ignore.o -lprism -o frls
-	./frls
+.PHONY: start test main clean all
 
-build:
-	$(CC) $(CFLAGS) -c cJSON.c -o cJSON.o
-	$(CC) $(CFLAGS) -c optparser.c -o optparser.o
-	$(CC) $(CFLAGS) -c utils.c -o utils.o
-	$(CC) $(CFLAGS) $(INCLUDES) -c transport.c -o transport.o
-	$(CC) $(CFLAGS) -c config.c -o config.o
-	$(CC) $(CFLAGS) $(INCLUDES) -c commands.c -o commands.o
-	$(CC) $(CFLAGS) $(INCLUDES) -c server.c -o server.o
-	$(CC) $(CFLAGS) $(INCLUDES) -c ignore.c -o ignore.o
-	$(CC) $(CFLAGS) $(INCLUDES) -c parser.c -o parser.o
-	$(CC) $(CFLAGS) $(INCLUDES) -c source.c -o source.o
+all: frls
+
+frls: $(BUILD_DIR) $(OBJS) prism_static
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) src/frls.c $(OBJS) -lprism -o $(BUILD_DIR)/frls
+
+start: frls
+	$(BUILD_DIR)/frls
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+$(BUILD_DIR)/cJSON.o: vendor/cJSON.c vendor/cJSON.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c vendor/cJSON.c -o $@
+
+$(BUILD_DIR)/optparser.o: src/optparser.c include/optparser.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c src/optparser.c -o $@
+
+$(BUILD_DIR)/utils.o: src/utils.c include/utils.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c src/utils.c -o $@
+
+$(BUILD_DIR)/transport.o: src/transport.c include/transport.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c src/transport.c -o $@
+
+$(BUILD_DIR)/config.o: src/config.c include/config.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c src/config.c -o $@
+
+$(BUILD_DIR)/commands.o: src/commands.c include/commands.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c src/commands.c -o $@
+
+$(BUILD_DIR)/server.o: src/server.c include/server.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c src/server.c -o $@
+
+$(BUILD_DIR)/ignore.o: src/ignore.c include/ignore.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c src/ignore.c -o $@
+
+$(BUILD_DIR)/parser.o: src/parser.c include/parser.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c src/parser.c -o $@
+
+$(BUILD_DIR)/source.o: src/source.c include/source.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c src/source.c -o $@
 
 prism_static:
 	cd prism && $(MAKE) static
 
-test: build
-	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) test/suite.c cJSON.o optparser.o config.o commands.o utils.o transport.o server.o parser.o source.o ignore.o -lprism -o test/suite
-	./test/suite
+test: $(BUILD_DIR) $(OBJS)
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) test/suite.c $(OBJS) -lprism -o $(BUILD_DIR)/suite
+	$(BUILD_DIR)/suite
 
 # is needed for experiments
-main:
-	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) main.c parser.o source.o utils.o -lprism -o main
-	./main
+main: $(BUILD_DIR) $(BUILD_DIR)/parser.o $(BUILD_DIR)/source.o $(BUILD_DIR)/utils.o prism_static
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) src/main.c $(BUILD_DIR)/parser.o $(BUILD_DIR)/source.o $(BUILD_DIR)/utils.o -lprism -o $(BUILD_DIR)/main
+
+clean:
+	rm -rf $(BUILD_DIR)
