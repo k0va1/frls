@@ -67,10 +67,7 @@ update-stb:
 update-deps: update-prism update-cjson update-stb
 
 test: frls
-	@for test in test/integration/*_test.rb; do \
-		echo "Running $$test..."; \
-		ruby $$test || exit 1; \
-	done
+	rake test
 
 # is needed for experiments
 main: $(BUILD_DIR) $(BUILD_DIR)/parser.o $(BUILD_DIR)/source.o $(BUILD_DIR)/utils.o prism_static

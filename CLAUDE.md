@@ -144,15 +144,28 @@ All build artifacts (object files and binaries) are placed in the `build/` direc
 
 ## Testing
 
-Integration tests are written in Ruby and located in `test/integration/`. The test suite automatically discovers and runs all files matching `*_test.rb` in that directory.
+Integration tests are written in Ruby and located in `test/integration/`. The test suite uses Rake with Minitest to automatically discover and run all files matching `*_test.rb`.
 
 **Prerequisites:**
 - Ruby 2.7 or later
 - Minitest gem (`gem install minitest`)
+- Rake gem (`gem install rake`)
 
 **Running tests:**
 ```bash
-make test    # Builds frls and runs all integration tests
+make test           # Builds frls and runs all integration tests
+rake test           # Run tests directly with Rake
+rake test:cmd       # Print out the test command
+rake test:isolated  # Show which test files fail when run separately
+rake test:slow      # Show bottom 25 tests sorted by time
+```
+
+**Running specific tests:**
+```bash
+rake test N=test_initialize                    # Run tests matching name
+rake test N=/definition/                       # Run tests matching regex
+rake test X=/basic/                            # Exclude tests matching pattern
+rake test SEED=12345                           # Run with specific random seed
 ```
 
 **Test structure:**
@@ -162,7 +175,7 @@ make test    # Builds frls and runs all integration tests
 - `definition_test.rb` - Go-to-definition functionality tests
 
 **Adding new tests:**
-Create a new `*_test.rb` file in `test/integration/` that extends `IntegrationTest` from `test_helper.rb`. It will be automatically picked up by `make test`.
+Create a new `*_test.rb` file in `test/integration/` that extends `IntegrationTest` from `test_helper.rb`. It will be automatically picked up by Rake.
 
 ## Notes
 

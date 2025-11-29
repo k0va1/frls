@@ -7,17 +7,26 @@ Ruby-based integration tests for the FRLS (Fast Ruby Language Server).
 - Ruby installed (2.7 or later recommended)
 - FRLS server built (`make` or `make all`)
 - Minitest gem (`gem install minitest`)
+- Rake gem (`gem install rake`)
 
 ## Running Tests
 
 Run all integration tests:
 ```bash
-ruby test/integration/basic_test.rb
-ruby test/integration/definition_test.rb
+make test           # Builds frls and runs all tests
+rake test           # Run tests directly with Rake
 ```
 
-Or run a specific test:
+Run specific tests:
 ```bash
+rake test N=test_initialize       # Run test by name
+rake test N=/definition/          # Run tests matching regex
+rake test X=/basic/               # Exclude tests matching pattern
+```
+
+Or run individual test files:
+```bash
+rake test test/integration/basic_test.rb
 ruby test/integration/basic_test.rb -n test_initialize
 ```
 

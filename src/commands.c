@@ -388,6 +388,7 @@ void go_to_definition(Server *server, Client *client, Request *request) {
 
   if (!(cJSON_IsObject(text_document) && cJSON_IsObject(position))) {
     invalid_params(client, request);
+    return;
   }
 
   cJSON *result = cJSON_CreateObject();
@@ -422,15 +423,19 @@ void go_to_definition(Server *server, Client *client, Request *request) {
   }
 
   char *file_path = get_file_path(uri);
+  log_info("Looking for source: %s", file_path);
   Source *source = get_source(server, file_path);
+  log_info("Source found: %s", source ? "true" : "false");
 
   if (source) {
     Location *locations = get_locations_by_position(server, source, line, character);
+    log_info("Locations found: %zu", arrlen(locations));
 
     cJSON *req_id = cJSON_CreateNumber(request->id);
     cJSON_AddItemToObject(response, "id", req_id);
 
     if (arrlen(locations) == 0) {
+      log_info("No locations found");
       cJSON_AddItemToObject(response, "result", cJSON_CreateNull());
     } else if (arrlen(locations) == 1) {
       char *uri = build_uri(locations->file_path);
@@ -494,5 +499,10 @@ void go_to_definition(Server *server, Client *client, Request *request) {
     send_response(client->socket, 200, json_str);
   } else {
     log_info("Source not found");
+    cJSON *req_id = cJSON_CreateNumber(request->id);
+    cJSON_AddItemToObject(response, "id", req_id);
+    cJSON_AddItemToObject(response, "result", cJSON_CreateNull());
+    char *json_str = cJSON_PrintUnformatted(response);
+    send_response(client->socket, 200, json_str);
   }
 }
