@@ -26,6 +26,9 @@ jobs:
         gem install minitest
         gem install rake
 
+    - name: Install prism dependencies
+      run: cd vendor/prism && bundle install && bundle exec rake templates
+
     - name: Build project
       run: make
 
