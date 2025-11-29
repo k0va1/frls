@@ -241,8 +241,8 @@ Server *create_server(Config *config) {
   server->parsed_info = calloc(1, sizeof(ParsedInfo));
   server->sources = NULL;
   server->clients = NULL;
-  server->master_set = malloc(sizeof(struct fd_set));
-  server->working_set = malloc(sizeof(struct fd_set));
+  server->master_set = malloc(sizeof(fd_set));
+  server->working_set = malloc(sizeof(fd_set));
 
   struct addrinfo *bind_address;
   create_bind_address(&bind_address, config);
