@@ -36,16 +36,16 @@ $(BUILD_DIR)/transport.o: src/transport.c include/transport.h | $(BUILD_DIR)
 $(BUILD_DIR)/config.o: src/config.c include/config.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c src/config.c -o $@
 
-$(BUILD_DIR)/commands.o: src/commands.c include/commands.h | $(BUILD_DIR)
+$(BUILD_DIR)/commands.o: src/commands.c include/commands.h prism_static | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c src/commands.c -o $@
 
-$(BUILD_DIR)/server.o: src/server.c include/server.h | $(BUILD_DIR)
+$(BUILD_DIR)/server.o: src/server.c include/server.h prism_static | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c src/server.c -o $@
 
 $(BUILD_DIR)/ignore.o: src/ignore.c include/ignore.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c src/ignore.c -o $@
 
-$(BUILD_DIR)/parser.o: src/parser.c include/parser.h | $(BUILD_DIR)
+$(BUILD_DIR)/parser.o: src/parser.c include/parser.h prism_static | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c src/parser.c -o $@
 
 $(BUILD_DIR)/source.o: src/source.c include/source.h | $(BUILD_DIR)
