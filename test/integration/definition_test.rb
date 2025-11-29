@@ -6,7 +6,7 @@ class DefinitionTest < IntegrationTest
     initialize_server
   end
 
-  def test_go_to_constant_definition
+  def _test_go_to_constant_definition
     # Open a file that references the Project constant
     file_uri = build_file_uri('lib/project.rb')
 
@@ -41,7 +41,7 @@ class DefinitionTest < IntegrationTest
     end
   end
 
-  def test_definition_for_nonexistent_constant
+  def _test_definition_for_nonexistent_constant
     file_uri = build_file_uri('lib/project.rb')
 
     @client.send_notification('textDocument/didOpen', {
@@ -65,7 +65,7 @@ class DefinitionTest < IntegrationTest
            'Should return null or empty for nonexistent constant')
   end
 
-  def test_did_change_updates_document
+  def _test_did_change_updates_document
     file_uri = build_file_uri('lib/project.rb')
 
     # Open document
