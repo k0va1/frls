@@ -92,11 +92,7 @@ ConstHM *build_const_map(char *file_path, pm_parser_t *parser, pm_node_t *node, 
     if (cast->parent != NULL) {
       consts = build_const_map(file_path, parser, (pm_node_t *)cast->parent, consts);
     }
-
-    // child
-    if (cast->child != NULL) {
-      consts = build_const_map(file_path, parser, (pm_node_t *)cast->child, consts);
-    }
+    // Note: child has been replaced with name (pm_constant_id_t) - no longer a node
     break;
   }
   case PM_CLASS_NODE: {
@@ -531,12 +527,18 @@ void traverse_ast(pm_node_t *node, pm_parser_t *parser,
       }
     }
 
-    // consequent
+    // conditions - iterate over the conditions list
     {
-      if (cast->consequent == NULL) {
-      } else {
+      size_t last_index = cast->conditions.size;
+      for (uint32_t index = 0; index < last_index; index++) {
+        traverse_ast((pm_node_t *)cast->conditions.nodes[index], parser, visit, arg);
+      }
+    }
 
-        traverse_ast((pm_node_t *)cast->consequent, parser, visit, arg);
+    // else_clause
+    {
+      if (cast->else_clause != NULL) {
+        traverse_ast((pm_node_t *)cast->else_clause, parser, visit, arg);
       }
     }
 
@@ -554,12 +556,18 @@ void traverse_ast(pm_node_t *node, pm_parser_t *parser,
       }
     }
 
-    // consequent
+    // conditions - iterate over the conditions list
     {
-      if (cast->consequent == NULL) {
-      } else {
+      size_t last_index = cast->conditions.size;
+      for (uint32_t index = 0; index < last_index; index++) {
+        traverse_ast((pm_node_t *)cast->conditions.nodes[index], parser, visit, arg);
+      }
+    }
 
-        traverse_ast((pm_node_t *)cast->consequent, parser, visit, arg);
+    // else_clause
+    {
+      if (cast->else_clause != NULL) {
+        traverse_ast((pm_node_t *)cast->else_clause, parser, visit, arg);
       }
     }
 
@@ -686,8 +694,7 @@ void traverse_ast(pm_node_t *node, pm_parser_t *parser,
       }
     }
 
-    // child
-    { traverse_ast((pm_node_t *)cast->child, parser, visit, arg); }
+    // Note: child has been replaced with name (pm_constant_id_t) - no longer a node
 
     break;
   }
@@ -725,8 +732,7 @@ void traverse_ast(pm_node_t *node, pm_parser_t *parser,
       }
     }
 
-    // child
-    { traverse_ast((pm_node_t *)cast->child, parser, visit, arg); }
+    // Note: child has been replaced with name (pm_constant_id_t) - no longer a node
 
     break;
   }
@@ -1028,12 +1034,12 @@ void traverse_ast(pm_node_t *node, pm_parser_t *parser,
       }
     }
 
-    // consequent
+    // subsequent (renamed from consequent)
     {
-      if (cast->consequent == NULL) {
+      if (cast->subsequent == NULL) {
       } else {
 
-        traverse_ast((pm_node_t *)cast->consequent, parser, visit, arg);
+        traverse_ast((pm_node_t *)cast->subsequent, parser, visit, arg);
       }
     }
 
@@ -1625,8 +1631,7 @@ void traverse_ast(pm_node_t *node, pm_parser_t *parser,
   case PM_RATIONAL_NODE: {
     pm_rational_node_t *cast = (pm_rational_node_t *)node;
 
-    // numeric
-    { traverse_ast((pm_node_t *)cast->numeric, parser, visit, arg); }
+    // Note: numeric has been replaced with numerator/denominator (pm_integer_t) - no longer nodes
 
     break;
   }
@@ -1681,12 +1686,12 @@ void traverse_ast(pm_node_t *node, pm_parser_t *parser,
       }
     }
 
-    // consequent
+    // subsequent (renamed from consequent)
     {
-      if (cast->consequent == NULL) {
+      if (cast->subsequent == NULL) {
       } else {
 
-        traverse_ast((pm_node_t *)cast->consequent, parser, visit, arg);
+        traverse_ast((pm_node_t *)cast->subsequent, parser, visit, arg);
       }
     }
 
@@ -1830,12 +1835,12 @@ void traverse_ast(pm_node_t *node, pm_parser_t *parser,
       }
     }
 
-    // consequent
+    // else_clause (renamed from consequent)
     {
-      if (cast->consequent == NULL) {
+      if (cast->else_clause == NULL) {
       } else {
 
-        traverse_ast((pm_node_t *)cast->consequent, parser, visit, arg);
+        traverse_ast((pm_node_t *)cast->else_clause, parser, visit, arg);
       }
     }
 
@@ -1902,6 +1907,14 @@ void traverse_ast(pm_node_t *node, pm_parser_t *parser,
       }
     }
 
+    break;
+  }
+  case PM_IT_LOCAL_VARIABLE_READ_NODE: {
+    // New node type in latest Prism - represents implicit 'it' parameter
+    break;
+  }
+  case PM_SHAREABLE_CONSTANT_NODE: {
+    // New node type in latest Prism - represents shareable constant declarations
     break;
   }
   }
