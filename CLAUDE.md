@@ -48,7 +48,12 @@ make update-prism
 make update-cjson
 ```
 
-**Update all dependencies (Prism and cJSON):**
+**Update stb_ds.h to latest version:**
+```bash
+make update-stb
+```
+
+**Update all dependencies (Prism, cJSON, and stb_ds.h):**
 ```bash
 make update-deps
 ```
@@ -135,7 +140,7 @@ All build artifacts (object files and binaries) are placed in the `build/` direc
 
 - **Prism**: Ruby parser (vendor/prism/ submodule)
 - **cJSON**: JSON parsing (vendor/cJSON/ submodule)
-- **stb_ds.h**: Dynamic arrays and hashmaps (vendor/stb_ds.h)
+- **stb_ds.h**: Dynamic arrays and hashmaps (vendor/stb_ds.h, fetched from nothings/stb repository)
 
 ## Testing
 
