@@ -66,9 +66,11 @@ update-stb:
 
 update-deps: update-prism update-cjson update-stb
 
-test: $(BUILD_DIR) $(OBJS)
-	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) test/suite.c $(OBJS) -lprism -o $(BUILD_DIR)/suite
-	$(BUILD_DIR)/suite
+test: frls
+	@for test in test/integration/*_test.rb; do \
+		echo "Running $$test..."; \
+		ruby $$test || exit 1; \
+	done
 
 # is needed for experiments
 main: $(BUILD_DIR) $(BUILD_DIR)/parser.o $(BUILD_DIR)/source.o $(BUILD_DIR)/utils.o prism_static

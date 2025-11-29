@@ -144,9 +144,25 @@ All build artifacts (object files and binaries) are placed in the `build/` direc
 
 ## Testing
 
-Tests are in test/suite.c. Test fixtures use LSP JSON-RPC messages in test/fixtures/.
+Integration tests are written in Ruby and located in `test/integration/`. The test suite automatically discovers and runs all files matching `*_test.rb` in that directory.
 
-The test suite uses a sample Ruby project in test/fixtures/project/.
+**Prerequisites:**
+- Ruby 2.7 or later
+- Minitest gem (`gem install minitest`)
+
+**Running tests:**
+```bash
+make test    # Builds frls and runs all integration tests
+```
+
+**Test structure:**
+- `lsp_client.rb` - LSP client helper for TCP communication with the server
+- `test_helper.rb` - Shared test setup and utilities
+- `basic_test.rb` - LSP lifecycle tests (initialize, shutdown, etc.)
+- `definition_test.rb` - Go-to-definition functionality tests
+
+**Adding new tests:**
+Create a new `*_test.rb` file in `test/integration/` that extends `IntegrationTest` from `test_helper.rb`. It will be automatically picked up by `make test`.
 
 ## Notes
 
