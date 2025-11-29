@@ -43,6 +43,16 @@ cd vendor/prism && make static
 make update-prism
 ```
 
+**Update cJSON submodule to latest version:**
+```bash
+make update-cjson
+```
+
+**Update all dependencies (Prism and cJSON):**
+```bash
+make update-deps
+```
+
 **Run the executable directly:**
 ```bash
 build/frls --help      # Show help
@@ -124,7 +134,7 @@ All build artifacts (object files and binaries) are placed in the `build/` direc
 ## Dependencies
 
 - **Prism**: Ruby parser (vendor/prism/ submodule)
-- **cJSON**: JSON parsing (vendor/cJSON.c)
+- **cJSON**: JSON parsing (vendor/cJSON/ submodule)
 - **stb_ds.h**: Dynamic arrays and hashmaps (vendor/stb_ds.h)
 
 ## Testing

@@ -1,6 +1,6 @@
 CC = clang
 CFLAGS = -Wall -Wextra
-INCLUDES = -I"include" -I"vendor" -I"vendor/prism/include"
+INCLUDES = -I"include" -I"vendor" -I"vendor/cJSON" -I"vendor/prism/include"
 LIBS = -L"vendor/prism/build"
 
 BUILD_DIR = build
@@ -8,7 +8,7 @@ OBJS = $(BUILD_DIR)/cJSON.o $(BUILD_DIR)/optparser.o $(BUILD_DIR)/config.o $(BUI
        $(BUILD_DIR)/utils.o $(BUILD_DIR)/transport.o $(BUILD_DIR)/server.o $(BUILD_DIR)/parser.o \
        $(BUILD_DIR)/source.o $(BUILD_DIR)/ignore.o
 
-.PHONY: start test main clean all update-prism
+.PHONY: start test main clean all update-prism update-cjson update-deps
 
 all: frls
 
@@ -21,8 +21,8 @@ start: frls
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-$(BUILD_DIR)/cJSON.o: vendor/cJSON.c vendor/cJSON.h | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -c vendor/cJSON.c -o $@
+$(BUILD_DIR)/cJSON.o: vendor/cJSON/cJSON.c vendor/cJSON/cJSON.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c vendor/cJSON/cJSON.c -o $@
 
 $(BUILD_DIR)/optparser.o: src/optparser.c include/optparser.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c src/optparser.c -o $@
@@ -57,6 +57,11 @@ prism_static:
 update-prism:
 	git submodule update --remote vendor/prism
 	cd vendor/prism && $(MAKE) clean && $(MAKE) static
+
+update-cjson:
+	git submodule update --remote vendor/cJSON
+
+update-deps: update-prism update-cjson
 
 test: $(BUILD_DIR) $(OBJS)
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) test/suite.c $(OBJS) -lprism -o $(BUILD_DIR)/suite
